@@ -1,0 +1,270 @@
+{
+	"info": {
+		"_postman_id": "20a6b17f-a1d1-4309-8654-67f98548f219",
+		"name": "posts_e2e",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9305595"
+	},
+	"item": [
+		{
+			"name": "register",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let UserName = pm.variables.replaceIn(\"{{$randomUserName}}\")\r",
+							"pm.environment.set(\"UserName\", UserName);\r",
+							"\r",
+							"let Email = pm.variables.replaceIn(\"{{$randomEmail}}\")\r",
+							"pm.environment.set(\"Email\", Email)\r",
+							"\r",
+							" function randomString(length=1) {\r",
+							"    let randomString = \"\";\r",
+							"    for (let i = 0; i < length; i++){\r",
+							"        randomString += pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\");\r",
+							"    }\r",
+							"    return randomString;\r",
+							"}\r",
+							"    \r",
+							"STRING_LEN = 10;\r",
+							"pm.environment.set(\"randomString\", randomString(STRING_LEN));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"username\": \"{{UserName}}\",\r\n\"email\": \"{{Email}}\",\r\n\"email2\": \"{{Email}}\",\r\n\"password1\":\"{{randonString}}\",\r\n\"password2\": \"{{randonString}}\",\r\n\"job\": \"myjob\",\r\n\"about_me\": \"bienvenue\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url_post}}/register/",
+					"host": [
+						"{{url_post}}"
+					],
+					"path": [
+						"register",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"verification des clés token et refresh\", () =>{\r",
+							"    const res = pm.response.json();\r",
+							"    pm.expect(res).to.have.property(\"access\");\r",
+							"    pm.expect(res).to.have.property(\"refresh\");\r",
+							"    pm.environment.set(\"tokene2e\", res.access);\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"username\": \"{{UserName}}\",\r\n\"password\": \"{{randomString}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url_post}}/login/",
+					"host": [
+						"{{url_post}}"
+					],
+					"path": [
+						"login",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "me",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{tokene2e}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url_post}}/me",
+					"host": [
+						"{{url_post}}"
+					],
+					"path": [
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add_comment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"verification des propriétés\", () => {\r",
+							"    let response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property(\"id\");\r",
+							"    pm.expect(response).to.have.property(\"user\");\r",
+							"    pm.expect(response).to.have.property(\"content\");\r",
+							"    pm.expect(response).to.have.property(\"created_at\");\r",
+							"    pm.expect(response).to.have.property(\"post\");\r",
+							"})\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{tokene2e}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"dyl2.0\",\r\n    \"id\":1,\r\n    \"content\":\"mon super hero commentaire\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url_post}}/posts/1/comments/",
+					"host": [
+						"{{url_post}}"
+					],
+					"path": [
+						"posts",
+						"1",
+						"comments",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_comment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url_post}}/posts/",
+					"host": [
+						"{{url_post}}"
+					],
+					"path": [
+						"posts",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
