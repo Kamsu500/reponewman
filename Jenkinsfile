@@ -7,11 +7,6 @@ pipeline {
     }
 
     stages {
-        stage('Installation de newman') {
-            steps {
-                sh 'npm install -g newman newman-reporter-htmlextra'
-            }
-        }
         stage('Run Newman tests') {
             steps {
                 sh '''
